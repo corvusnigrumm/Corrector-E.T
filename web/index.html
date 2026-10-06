@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ET · Mesa de Control Editorial / eltiempo.com</title>
+  
+  <!-- Tipografías de Prensa: Fraunces, Inter y JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Estilos Editoriales -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- ===== TICKER SUPERIOR ===== -->
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span class="ticker-live"><span class="dot"></span>LIVE</span>
+      <span class="ticker-item"><b>BOG</b> 4°32'N 74°04'W</span>
+      <span class="ticker-sep">◆</span>
+      <span class="ticker-item"><b id="tDate">-- --- ----</b></span>
+      <span class="ticker-sep">◆</span>
+      <span class="ticker-item"><b id="tTime">--:--:--</b> COT</span>
+      <span class="ticker-sep">◆</span>
+      <span class="ticker-item">INTERVALO <b id="tickerInterval">90s</b></span>
+      <span class="ticker-sep">◆</span>
+      <span class="ticker-item">SISTEMA <b>5 AGENTES IA</b></span>
+      <div class="ticker-scroll">
+        <span class="ticker-item">PORTADA <b id="tickerNotas">126 NOTAS</b></span>
+        <span class="ticker-sep">◆</span>
+        <span class="ticker-item">COBERTURA <b>HOME COMPLETO</b></span>
+        <span class="ticker-sep">◆</span>
+        <span class="ticker-item">FUENTE <b>ELTIEMPO.COM</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== HEADER PRINCIPAL ===== -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="masthead">
+        <div class="masthead-mark">
+          <img src="/logo.png" alt="Corvus Nigrum" width="64" height="64">
+        </div>
+        <div class="masthead-text">
+          <span class="masthead-kicker">Corvus Nigrum · Redacción Central</span>
+          <h1 class="masthead-title">Mesa de Control Editorial</h1>
+          <span class="masthead-sub">Auditoría en vivo · <b>eltiempo.com</b> · Corrector de Estilo y Calidad</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="header-stat">
+          <span class="lbl">Supervisión</span>
+          <span class="val">Multi-Agente Autónomo</span>
+        </div>
+        <div class="header-stat">
+          <span class="lbl">Modelo de Detección</span>
+          <span class="val">Qwen 27B · Groq LLM</span>
+        </div>
+        <div class="header-stat">
+          <span class="lbl">Modo</span>
+          <span class="val">Centinela Continuo</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-ghost" id="openDict">Diccionario (<span id="btnDictCount">0</span>)</button>
+        <button class="btn-primary" id="auditBtn">⚡ Auditar Portada</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== CONTENIDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <!-- KPI GRID -->
+    <section class="kpi-grid">
+      <div class="kpi info">
+        <div class="kpi-label"><span class="idx">01</span>Notas Auditadas</div>
+        <div class="kpi-value" id="kpiNotes">0</div>
+        <span class="kpi-unit">Artículos · Portada Completa</span>
+        <div class="kpi-foot"><span class="delta flat">↔</span> Censo exhaustivo en vivo</div>
+      </div>
+      <div class="kpi alert">
+        <div class="kpi-label"><span class="idx">02</span>Alertas Críticas</div>
+        <div class="kpi-value" id="kpiCrit">0</div>
+        <span class="kpi-unit">H1 · H2 · SEO Title</span>
+        <div class="kpi-foot"><span class="delta up" id="kpiCritFoot">Requieren acción inmediata</span></div>
+      </div>
+      <div class="kpi warn">
+        <div class="kpi-label"><span class="idx">03</span>Alertas Medias</div>
+        <div class="kpi-value" id="kpiMed">0</div>
+        <span class="kpi-unit">H3 · H4 · Bajadas · Viñetas</span>
+        <div class="kpi-foot"><span class="delta flat" id="kpiMedFoot">Observaciones de redacción</span></div>
+      </div>
+      <div class="kpi ok">
+        <div class="kpi-label"><span class="idx">04</span>Whitelist</div>
+        <div class="kpi-value" id="kpiWhitelist">0</div>
+        <span class="kpi-unit">Términos Aprobados</span>
+        <div class="kpi-foot"><span class="delta flat">—</span> Excepciones aprendidas</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label"><span class="idx">05</span>Último Ciclo</div>
+        <div class="kpi-value mono" id="kpiTime" style="font-size:30px;font-family:'JetBrains Mono',monospace;font-weight:500">--:--:--</div>
+        <span class="kpi-unit">Sondeo Cada 90 Segundos</span>
+        <div class="kpi-foot"><span class="delta flat">●</span> Sincronizado</div>
+      </div>
+    </section>
+
+    <!-- NAVEGACIÓN POR PESTAÑAS -->
+    <div class="tabs">
+      <button class="tab active" data-tab="queue" id="tab-btn-queue">
+        <span>Cola de Incidencias</span>
+        <span class="count crit" id="tabCount">0</span>
+      </button>
+      <button class="tab" data-tab="censo" id="tab-btn-censo">
+        <span>Censo de Portada</span>
+        <span class="count" id="tabCensoCount">0</span>
+      </button>
+    </div>
+
+    <!-- VISTA 1: COLA DE INCIDENCIAS -->
+    <section class="view active" id="view-queue">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Triage Editorial · Prioridad por Severidad</div>
+          <h2 class="section-title">Incidencias Activas <span class="num" id="queueHeaderCount">/ 0 REGISTROS</span></h2>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <span class="lbl">Filtrar:</span>
+        <button class="fchip active" data-filter="all">Todas · <span id="fCountAll">0</span></button>
+        <button class="fchip" data-filter="crit"><span class="bar" style="background:var(--red)"></span>Críticas · <span id="fCountCrit">0</span></button>
+        <button class="fchip" data-filter="med"><span class="bar" style="background:var(--amber)"></span>Medias · <span id="fCountMed">0</span></button>
+        <button class="fchip" data-filter="titular">Titulares</button>
+        <button class="fchip" data-filter="bajada">Bajadas</button>
+        <button class="fchip" data-filter="seo">SEO</button>
+        <button class="fchip" data-filter="vineta">Viñetas</button>
+      </div>
+
+      <div class="queue-list" id="queueList"></div>
+    </section>
+
+    <!-- VISTA 2: CENSO INTEGRAL DEL HOME -->
+    <section class="view" id="view-censo">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Cobertura Integral · Home eltiempo.com</div>
+          <h2 class="section-title">Portada en Vivo <span class="num" id="censoHeaderCount">/ 0 ARTÍCULOS</span></h2>
+        </div>
+      </div>
+
+      <div class="censo-toolbar">
+        <div class="search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" id="searchInput" placeholder="Buscar por titular, sección o palabra…">
+          <span class="kbd">⌘K</span>
+        </div>
+        <div id="censoSectionsChips" style="display:contents;">
+          <button class="fchip active" data-censo="all">Todas</button>
+        </div>
+      </div>
+
+      <div class="censo-grid" id="censoGrid"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== DRAWER (DICCIONARIO EDITORIAL / WHITELIST) ===== -->
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <div>
+        <h3>Diccionario Editorial</h3>
+        <p id="drawerWhitelistMeta">Whitelist · 0 términos aprobados</p>
+      </div>
+      <button class="drawer-close" id="closeDict">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body">
+      <!-- Añadir término manualmente -->
+      <div class="drawer-add">
+        <input type="text" id="addWordInput" placeholder="Añadir palabra o excepción (ej. Petro, Eln)...">
+        <button class="btn-primary" id="addWordBtn" style="white-space:nowrap;">+ Agregar</button>
+      </div>
+      <div class="drawer-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="wlSearch" placeholder="Buscar término en el diccionario…">
+      </div>
+      <div class="wl-list" id="wlList"></div>
+    </div>
+  </aside>
+
+  <!-- ===== TOASTS DE NOTIFICACIÓN ===== -->
+  <div class="toasts" id="toasts"></div>
+
+  <!-- Script de Conexión a la API y Lógica de Interfaz -->
+  <script src="/app.js"></script>
+</body>
+</html>

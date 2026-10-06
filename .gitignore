@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.venv/
+venv/
+.env
+
+# PyInstaller / Build
+build/
+dist/
+*.spec
+*.exe
+
+# Léxico español (14 MB — se descarga en runtime si no existe)
+es_full.txt
+
+# Archivos de estado y reportes temporales generados en runtime
+storage/
+reporte_*.json
+errores_*.json
+
+# IDE
+.vscode/
+.idea/
+scratch/
+
+# Presentaciones y PDFs locales
+presentacion.html
+presentacion.pdf
+DISEÑO INTERFAZ/

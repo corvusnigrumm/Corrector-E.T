@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: corrector-editorial-corvus
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run_monitor.py
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      # Configura esta clave en el panel de Render → Environment
+      - key: GROQ_API_KEY
+        sync: false
+      # Modelo disponible en Groq (free tier)
+      - key: GROQ_MODEL
+        value: "qwen/qwen3-8b"
+      # Intervalo de monitoreo (segundos) — 120s es más amigable con CPU de free tier
+      - key: CRAWL_INTERVAL_SECONDS
+        value: "120"
+      # Directorio de almacenamiento persistente (necesita Render Disk montado en /data)
+      # Si no tienes Render Disk, se usará ./storage relativo al proyecto
+      - key: STORAGE_DIR
+        value: "/data/storage"
+      # Identificador de entorno cloud para suprimir apertura de navegador y ajustar host
+      - key: RENDER
+        value: "true"

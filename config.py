@@ -16,18 +16,48 @@ try:
 except Exception:
     pass
 
+# Cargar variables de entorno desde archivo .env si existe
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
+
 URL_TARGET = "https://www.eltiempo.com/"
 CRAWL_INTERVAL_SECONDS = int(os.environ.get("CRAWL_INTERVAL_SECONDS", 90))
 
-# API de Groq — la clave NUNCA debe ir hardcodeada aquí.
-# Configurarla como variable de entorno: GROQ_API_KEY=gsk_...
-# En local: crear un archivo .env o exportarla en la terminal antes de ejecutar.
+# API de Groq
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 if not GROQ_API_KEY:
     print("[Config] ⚠ GROQ_API_KEY no configurada. El agente corrector IA no funcionará hasta configurarla.")
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = os.environ.get("GROQ_MODEL", "qwen/qwen3-8b")
+
+# Perfiles de Modelos de IA Disponibles
+MODELOS_SOPORTADOS = {
+    "qwen/qwen3.8-27b": {
+        "id": "qwen/qwen3.8-27b",
+        "alias": "qwen",
+        "nombre": "Qwen 3.8 (27B)",
+        "descripcion": "Alta velocidad y precisión ortográfica en español",
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "max_completion_tokens": 2048,
+        "reasoning_effort": "default"
+    },
+    "openai/gpt-oss-120b": {
+        "id": "openai/gpt-oss-120b",
+        "alias": "gpt",
+        "nombre": "GPT-OSS (120B)",
+        "descripcion": "Razonamiento profundo y sintaxis avanzada",
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "max_completion_tokens": 2048,
+        "reasoning_effort": "medium"
+    }
+}
+
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b")
 
 # Detección de entorno compilado (PyInstaller) vs script normal
 if getattr(sys, "frozen", False):

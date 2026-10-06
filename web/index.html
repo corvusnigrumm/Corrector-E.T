@@ -57,9 +57,12 @@
           <span class="lbl">Supervisión</span>
           <span class="val">Multi-Agente Autónomo</span>
         </div>
-        <div class="header-stat">
+        <div class="header-stat model-selector-stat">
           <span class="lbl">Modelo de Detección</span>
-          <span class="val">Qwen 27B · Groq LLM</span>
+          <select id="modelSelector" class="model-select-dropdown" title="Seleccionar modelo de IA para auditoría">
+            <option value="qwen/qwen3.8-27b">⚡ Qwen 3.8 (27B)</option>
+            <option value="openai/gpt-oss-120b">🧠 GPT-OSS (120B)</option>
+          </select>
         </div>
         <div class="header-stat">
           <span class="lbl">Modo</span>

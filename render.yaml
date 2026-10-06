@@ -13,9 +13,9 @@ services:
       # Configura esta clave en el panel de Render → Environment
       - key: GROQ_API_KEY
         sync: false
-      # Modelo disponible en Groq (free tier)
+      # Modelo predeterminado: qwen/qwen3.8-27b o openai/gpt-oss-120b
       - key: GROQ_MODEL
-        value: "qwen/qwen3-8b"
+        value: "qwen/qwen3.8-27b"
       # Intervalo de monitoreo (segundos) — 120s es más amigable con CPU de free tier
       - key: CRAWL_INTERVAL_SECONDS
         value: "120"

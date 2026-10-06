@@ -11,7 +11,7 @@ import os
 import re
 import time
 from groq import Groq
-from config import GROQ_API_KEY, GROQ_MODEL, LEXICO_LOCAL, FEEDBACK_RULES_FILE
+from config import GROQ_API_KEY, GROQ_MODEL, MODELOS_SOPORTADOS, LEXICO_LOCAL, FEEDBACK_RULES_FILE
 
 
 class CorrectorAgent:
@@ -20,6 +20,41 @@ class CorrectorAgent:
         self.model = model
         self.lexico = self._cargar_lexico()
         self.feedback_rules = self._cargar_feedback()
+
+    def cambiar_modelo(self, nuevo_modelo):
+        """Permite alternar entre modelos soportados dinámicamente."""
+        if nuevo_modelo in MODELOS_SOPORTADOS:
+            self.model = nuevo_modelo
+        else:
+            for mid, cfg in MODELOS_SOPORTADOS.items():
+                if cfg.get("alias") == nuevo_modelo:
+                    self.model = mid
+                    break
+            else:
+                self.model = nuevo_modelo
+        print(f"[Agente 3: Corrector] [Modelo IA] Modelo activo cambiado a: {self.model}")
+
+    def _obtener_config_modelo(self, model_id=None):
+        mid = model_id or self.model
+        if mid in MODELOS_SOPORTADOS:
+            return MODELOS_SOPORTADOS[mid]
+        for k, v in MODELOS_SOPORTADOS.items():
+            if v.get("alias") == mid:
+                return v
+        return {
+            "id": mid,
+            "nombre": mid,
+            "temperature": 0.6,
+            "top_p": 0.95,
+            "max_completion_tokens": 2048,
+            "reasoning_effort": "default"
+        }
+
+    def _obtener_modelo_alternativo(self, model_id=None):
+        mid = model_id or self.model
+        if "gpt-oss" in mid:
+            return "qwen/qwen3.8-27b"
+        return "openai/gpt-oss-120b"
 
     def _cargar_lexico(self):
         lexico = set()
@@ -146,19 +181,27 @@ class CorrectorAgent:
 
             print(f"  [Agente 3: Corrector] Evaluando lote {idx_lote}/{total_lotes} ({len(lote)} textos)...", end="\r")
 
+            modelo_actual = self.model
             for reintento in range(3):
                 try:
-                    completion = client.chat.completions.create(
-                        model=self.model,
-                        messages=[
+                    cfg = self._obtener_config_modelo(modelo_actual)
+                    api_params = {
+                        "model": cfg["id"],
+                        "messages": [
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": "Audita minuciosamente estos textos de la portada:\n\n" + "\n".join(lineas)}
                         ],
-                        temperature=0.0,
-                        max_completion_tokens=2048,
-                        response_format={"type": "json_object"},
-                        stream=False
-                    )
+                        "temperature": cfg.get("temperature", 0.6),
+                        "max_completion_tokens": cfg.get("max_completion_tokens", 2048),
+                        "response_format": {"type": "json_object"},
+                        "stream": False
+                    }
+                    if "top_p" in cfg:
+                        api_params["top_p"] = cfg["top_p"]
+                    if cfg.get("reasoning_effort") and "gpt-oss" in cfg["id"]:
+                        api_params["reasoning_effort"] = cfg["reasoning_effort"]
+
+                    completion = client.chat.completions.create(**api_params)
                     raw_content = completion.choices[0].message.content
 
                     if raw_content:
@@ -198,11 +241,15 @@ class CorrectorAgent:
                                     "palabra_erronea": palabra,
                                     "correccion": correccion,
                                     "tipo_error": h.get("tipo_error", "ortografia"),
-                                    "explicacion": h.get("explicacion", "")
+                                    "explicacion": h.get("explicacion", ""),
+                                    "modelo_usado": cfg.get("nombre", cfg["id"])
                                 })
                     break
                 except Exception as api_err:
+                    modelo_alt = self._obtener_modelo_alternativo(modelo_actual)
                     if reintento < 2:
+                        print(f"\n[Agente 3: Corrector] ⚠ Reintento {reintento+1} con modelo alternativo ({modelo_alt}). Motivo: {api_err}")
+                        modelo_actual = modelo_alt
                         time.sleep(2 * (reintento + 1))
                     else:
                         print(f"\n[Agente 3: Corrector] ✘ Advertencia en lote {idx_lote}: {api_err}")

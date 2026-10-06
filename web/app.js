@@ -564,9 +564,48 @@ const months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', '
 const today = new Date();
 document.getElementById('tDate').textContent = `${String(today.getDate()).padStart(2, '0')} ${months[today.getMonth()]} ${today.getFullYear()}`;
 
-setInterval(actualizarReloj, 1000);
-actualizarReloj();
+/* ==========================================================================
+   GESTIÓN DINÁMICA DE MODELOS DE IA
+   ========================================================================== */
+async function cargarModeloActivo() {
+  const sel = document.getElementById('modelSelector');
+  if (!sel) return;
+  try {
+    const res = await fetch('/api/model');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.actual) {
+        sel.value = data.actual;
+      }
+    }
+  } catch (err) {
+    console.warn('No se pudo sincronizar modelo activo:', err);
+  }
+}
+
+const modelSelectorElem = document.getElementById('modelSelector');
+if (modelSelectorElem) {
+  modelSelectorElem.addEventListener('change', async (e) => {
+    const nuevoModelo = e.target.value;
+    const nombreModelo = e.target.options[e.target.selectedIndex].text;
+    try {
+      const res = await fetch('/api/model', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: nuevoModelo })
+      });
+      if (res.ok) {
+        showToast(`Agente IA actualizado a: ${nombreModelo}`, 'info');
+      } else {
+        showToast('Error al cambiar modelo en el servidor', 'warn');
+      }
+    } catch (err) {
+      showToast('Error de conexión al cambiar modelo', 'warn');
+    }
+  });
+}
 
 // Carga inicial y sondeo periódico cada 20 segundos
+cargarModeloActivo();
 cargarDatos();
 setInterval(cargarDatos, 20000);

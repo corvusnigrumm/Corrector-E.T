@@ -10,6 +10,7 @@ venv/
 # PyInstaller / Build
 build/
 dist/
+_internal/
 *.spec
 *.exe
 

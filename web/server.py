@@ -43,6 +43,7 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(json.dumps(data, ensure_ascii=False).encode("utf-8"))
 
     def do_GET(self):
+        global orquestador_global
         parsed = urllib.parse.urlparse(self.path)
 
         if parsed.path == "/api/incidencias":
@@ -75,15 +76,30 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                     pass
             return self._responder_json({"whitelist": []})
 
+        elif parsed.path == "/api/model":
+            from config import MODELOS_SOPORTADOS, GROQ_MODEL
+            modelo_actual = GROQ_MODEL
+            if orquestador_global and hasattr(orquestador_global, "corrector"):
+                modelo_actual = orquestador_global.corrector.model
+            return self._responder_json({
+                "actual": modelo_actual,
+                "modelos": list(MODELOS_SOPORTADOS.values())
+            })
+
         elif parsed.path in ("/ping", "/health"):
             # Endpoint de Keep-Alive para UptimeRobot y verificación de estado
             import threading
+            from config import GROQ_MODEL
+            modelo_actual = GROQ_MODEL
+            if orquestador_global and hasattr(orquestador_global, "corrector"):
+                modelo_actual = orquestador_global.corrector.model
             hilos = {t.name: t.is_alive() for t in threading.enumerate()}
             return self._responder_json({
                 "status": "ok",
                 "service": "Corrector Editorial Corvus Nigrum",
                 "uptime": "activo",
                 "agentes": "5 agentes IA en línea",
+                "modelo_activo": modelo_actual,
                 "monitor": hilos.get("monitor", False),
                 "target": "https://www.eltiempo.com"
             })
@@ -92,6 +108,7 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
 
 
     def do_POST(self):
+        global orquestador_global
         parsed = urllib.parse.urlparse(self.path)
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
@@ -145,7 +162,6 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
 
         elif parsed.path == "/api/trigger":
             # Forzar sondeo manual completo desde el orquestador
-            global orquestador_global
             if not orquestador_global:
                 orquestador_global = EditorialOrchestrator()
             incidencias = orquestador_global.ejecutar_ciclo(forzar_completo=True)
@@ -153,6 +169,16 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                 "ok": True,
                 "mensaje": f"Sondeo completo finalizado. {len(incidencias)} incidencias detectadas."
             })
+
+        elif parsed.path == "/api/model":
+            nuevo_modelo = payload.get("model")
+            if nuevo_modelo:
+                import config
+                config.GROQ_MODEL = nuevo_modelo
+                if orquestador_global and hasattr(orquestador_global, "corrector"):
+                    orquestador_global.corrector.cambiar_modelo(nuevo_modelo)
+                return self._responder_json({"ok": True, "modelo": nuevo_modelo})
+            return self._responder_json({"ok": False, "error": "Modelo no especificado"}, 400)
 
         self.send_error(404, "Ruta no encontrada")
 
